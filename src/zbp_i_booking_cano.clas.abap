@@ -1,0 +1,5 @@
+CLASS zbp_i_booking_cano DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF z_i_travel_cano.
+ENDCLASS.
+
+CLASS zbp_i_booking_cano IMPLEMENTATION.
+ENDCLASS.

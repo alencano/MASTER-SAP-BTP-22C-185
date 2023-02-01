@@ -1,0 +1,15 @@
+@EndUserText.label: 'Service Definitions Travel'
+define service Zsd_travel_cano {
+  expose z_c_travel_cano as Travel;
+  expose z_c_booking_cano as Booking;
+  expose z_c_booksuppl_cano as BookingSupplement;
+  expose /DMO/I_Supplement as Supplement;
+  expose /DMO/I_SupplementText as SupplementText;
+  expose /DMO/I_Customer as Pasanger;
+  expose /DMO/I_Agency as Agency;
+  expose /DMO/I_Carrier as Airline;
+  expose /DMO/I_Connection as FlightConnection;
+  expose /DMO/I_Flight as Flight;
+  expose I_Currency as Currency;
+  expose I_Country as Country;
+}

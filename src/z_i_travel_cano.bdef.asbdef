@@ -1,0 +1,126 @@
+managed;
+//strict ( 1 ); //Uncomment this line in order to enable strict mode 2. The strict mode has two variants (strict(1), strict(2)) and is prerequisite to be future proof regarding syntax and to be able to release your BO.
+
+define behavior for z_i_travel_cano alias Travel
+implementation in class zbp_i_travel_cano unique
+persistent table ztb_travel_cano
+lock master
+authorization master ( instance )
+etag master LastChangedAt
+{
+  // administrative fields: read only
+  field ( readonly ) LastChangedAt,
+  LastChangedBy, CreatedAt, CreatedBy;
+  // mandatory fields that are required to create a travel
+  field ( mandatory ) AgencyId, OverallStatus,
+  BookingFee, currency_code;
+  // dynamic field control
+  field ( features : instance ) TravelId;
+  create;
+  update;
+  delete;
+
+  // validations
+  validation validateCustomer on save { field CustomerId; }
+  validation validateDates on save { field BeginDate, EndDate; }
+  validation validateStatus on save { field OverallStatus; }
+
+  //actions
+  action ( features : instance ) acceptTravel result [1] $self;
+  action ( features : instance ) rejectTravel result [1] $self;
+
+  action createTravelByTemplate result [1] $self;
+
+  association _Booking { create; }
+
+  mapping for ZTB_TRAVEL_CANO
+  {
+    TravelId = travel_id;
+    AgencyId = agency_id;
+    CustomerId = customer_id;
+    BeginDate = begin_date;
+    EndDate = end_date;
+    BookingFee = booking_fee;
+    TotalPrice = total_price;
+    currency_code = currency_code;
+    Description = description;
+    OverallStatus = overall_status;
+    CreatedBy = created_by;
+    CreatedAt = created_at;
+    LastChangedBy = last_changed_by;
+    LastChangedAt = last_changed_at;
+  }
+}
+
+define behavior for z_i_booking_cano alias Booking
+implementation in class zbp_i_booking_cano unique
+persistent table ztb_booking_cano
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master LastChangedAt
+{
+  // static fields control
+  field ( readonly ) TravelId;
+  field ( mandatory ) CarrierId, ConnectionId,
+  FlightDate, BookingStatus;
+  update;
+  delete;
+
+  //validations
+  validation validateStatus on save { field BookingStatus; }
+
+  //determinations
+  determination calculateTotalFlightPrice on modify
+  { field FlightPrice, CurrencyCode; }
+
+  association _Travel;
+  association _BookingSupplement { create; }
+
+  mapping for ZTB_BOOKING_CANO
+  {
+    TravelId = travel_id;
+    BookingId = booking_id;
+    CustomerId = customer_id;
+    CarrierId = carrier_id;
+    ConnectionId = connection_id;
+    FlightDate = flight_date;
+    FlightPrice = flight_price;
+    CurrencyCode = currency_code;
+    BookingStatus = booking_status;
+    LastChangedAt = last_changed_at;
+  }
+}
+
+define behavior for z_i_booksuppl_cano alias Supplement
+implementation in class zbp_i_booksuppl_cano unique
+with unmanaged save
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master LastChangedAt
+{
+  // Static fields control
+  field ( mandatory : create ) SupplementId, Price;
+  field ( readonly ) TravelId, BookingId;
+
+  mapping for ztb_log_cano corresponding;
+  mapping for ztb_booksuppl_cn
+  {
+    TravelId = travel_id;
+    BookingId = booking_id;
+    BookingSupplementId = booking_supplement_id;
+    SupplementId = supplement_id;
+    Price = price;
+    currency = Currency;
+    LastchangedAt = last_changed_at;
+  }
+
+  update;
+  delete;
+
+  association _Travel;
+  association _Booking;
+
+  //Determination
+  determination calculateTotaSupplimPrice on modify { field Price, Currency; }
+
+}
